@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dashboard Prodi Sp2 &ndash; PPDS FK Unhas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --border: #e2e8f0; --text: #0f172a; --muted: #64748b; --muted2: #94a3b8;
+    --blue: #2563eb; --teal: #0d9488; --amber: #d97706; --violet: #7c3aed; --green: #16a34a; --red:#dc2626;
+    --grid: #e2e8f0; --card: #ffffff;
+    box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #ffffff; color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+  header { margin-bottom: 20px; }
+  header .tag { display:inline-block; font-size: 11.5px; font-weight: 800; letter-spacing:.06em; padding: 5px 12px; border-radius: 999px; margin-bottom: 10px; }
+  header h1 { font-size: clamp(20px, 3.2vw, 28px); margin: 0 0 6px; font-weight: 800; letter-spacing: -0.02em; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 22px 0; }
+  @media (max-width: 800px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; border-top: 3px solid var(--accent, var(--blue)); }
+  .kpi .label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .kpi .value { font-size: 25px; font-weight: 800; margin-top: 6px; color: var(--accent, var(--blue)); }
+  .kpi .sub { font-size: 11.5px; color: var(--muted2); margin-top: 2px; }
+
+  .grid2 { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+  @media (max-width: 880px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  .card h2 { font-size: 14.5px; margin: 0 0 12px; font-weight: 700; }
+  .chart-holder { position: relative; height: 280px; }
+
+  .notice { border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; display:flex; gap: 12px; align-items:flex-start; }
+  .notice .icon { font-size: 20px; line-height: 1; }
+  .notice .body b { display:block; margin-bottom: 3px; font-size: 13.5px; }
+  .notice .body p { margin: 0; font-size: 12.8px; line-height:1.55; }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .search-box { flex: 1 1 220px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; color: var(--text); background: #fff; }
+  .search-box:focus { border-color: var(--blue); }
+  .chip { padding: 7px 13px; border-radius: 999px; border: 1px solid var(--border); background: #f8fafc; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .chip.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .result-count { font-size: 12.5px; color: var(--muted2); margin-bottom: 10px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); border-bottom: 1px solid var(--border); padding: 8px 10px; position: sticky; top: 0; background: var(--card); }
+  tbody td { padding: 10px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tbody tr:hover { background: #f8fafc; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .table-scroll { max-height: 620px; overflow-y: auto; overflow-x: auto; border-radius: 10px; }
+  .no-result { text-align: center; padding: 30px; color: var(--muted2); font-size: 13.5px; }
+  .prodi-name { font-weight: 600; }
+  .new-tag { display:inline-block; margin-left:6px; font-size:10px; font-weight:800; color:#7c3aed; background:#f3e8ff; padding:2px 7px; border-radius:999px; vertical-align:middle; }
+
+  .nav-link { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color: var(--blue); text-decoration:none; margin-bottom: 14px; }
+
+  footer { margin-top: 26px; text-align: center; color: var(--muted2); font-size: 12px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="nav-link" href="https://claude.ai/artifact/6KcNDxCiHYnZ9SsKsgFyCe">&larr; Lihat Dashboard Sp1 (Spesialis)</a>
+  <header>
+    <span class="tag" style="background:#ede9fe;color:#6d28d9;">PROGRAM SUBSPESIALIS (SP2)</span>
+    <h1>Dashboard Program Studi Subspesialis (Sp2)</h1>
+    <p>Daftar &amp; status akreditasi 6 Program Studi Subspesialis PPDS FK Unhas Tahun 2026</p>
+  </header>
+  
+  <section class="kpis">
+    <div class="kpi" style="--accent: var(--violet)"><div class="label">TOTAL PRODI SP2</div><div class="value">6</div><div class="sub">Program Studi Subspesialis</div></div>
+    <div class="kpi" style="--accent: var(--green)"><div class="label">TERAKREDITASI UNGGUL</div><div class="value">3</div><div class="sub">50.0% dari Sp2</div></div>
+    <div class="kpi" style="--accent: var(--muted2)"><div class="label">BELUM TERAKREDITASI</div><div class="value">3</div><div class="sub">Termasuk prodi baru</div></div>
+    <div class="kpi" style="--accent: #7c3aed"><div class="label">PRODI BARU JULI 2026</div><div class="value">2</div><div class="sub">Sp2 Orthopaedi &amp; Sp2 DVE</div></div>
+  </section>
+
+  
+  <div class="notice" style="background:#f5f3ff;border:1px solid #ddd6fe;">
+    <div class="icon">🆕</div>
+    <div class="body">
+      <b style="color:#5b21b6;">2 Program Studi Subspesialis Baru (Juli 2026)</b>
+      <p style="color:#4c1d95;">Fakultas Kedokteran Unhas membuka <b>Sp2 Orthopaedi dan Traumatologi</b> serta <b>Sp2 Dermatologi, Venereologi dan Estetika (DVE)</b> mulai Juli 2026, menambah total menjadi 30 program studi PPDS FKUH secara keseluruhan (Sp1 + Sp2).</p>
+    </div>
+  </div>
+
+  
+  <div class="grid2">
+    <div class="card">
+      <h2>Status Akreditasi Sp2</h2>
+      <div class="chart-holder"><canvas id="chartAcc"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Terakreditasi vs Belum Terakreditasi</h2>
+      <div class="chart-holder" style="height:280px;"><canvas id="chartBar"></canvas></div>
+    </div>
+  </div>
+
+  
+  <div class="card">
+    <h2>Daftar Lengkap Program Studi Sp2</h2>
+    <div class="controls"><input id="searchBox" class="search-box" type="text" placeholder="Cari nama program studi..."></div>
+    <div class="controls" id="chipRow"></div>
+    <div class="result-count" id="resultCount"></div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th style="width:44px;">No</th><th>Program Studi</th><th style="width:170px;">Status Akreditasi</th><th style="width:260px;">Nomor Akreditasi</th></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="no-result" id="noResult" style="display:none;">Tidak ada program studi yang cocok.</div>
+    </div>
+  </div>
+
+  <footer>Sumber: Daftar Program Studi Spesialis &amp; Subspesialis, Akreditasi Program Studi PPDS FK Unhas 2026<br>Total keseluruhan: 30 Prodi PPDS FKUH (24 Sp1 + 6 Sp2) Tahun 2026</footer>
+</div>
+<script>
+const DATA = [{"no": 1, "nama": "Subspesialis Ilmu Penyakit Dalam", "akreditasi": "Unggul", "nomor": "0304/LAM-PTKes/Akr/SubSpe/V/2024", "baru": false}, {"no": 2, "nama": "Subspesialis Ilmu Bedah", "akreditasi": "Unggul", "nomor": "0950/LAM-PTKes/Akr.PB/SubSpe/XI/2024", "baru": false}, {"no": 3, "nama": "Subspesialis Anestesiologi dan Terapi Intensif", "akreditasi": "Unggul", "nomor": "0003/LAM-PTKes/Akr/SubSpe/I/2026", "baru": false}, {"no": 4, "nama": "Subspesialis Obstetri dan Ginekologi", "akreditasi": "Belum Terakreditasi", "nomor": "-", "baru": false}, {"no": 5, "nama": "Subspesialis Dermatologi & Venereologi (Sp2 DVE)", "akreditasi": "Belum Terakreditasi", "nomor": "-", "baru": true}, {"no": 6, "nama": "Subspesialis Orthopaedi dan Traumatologi (Sp2 Orthopaedi)", "akreditasi": "Belum Terakreditasi", "nomor": "-", "baru": true}];
+const ACC_COLORS = {"Unggul": "#16a34a", "Baik Sekali": "#2563eb", "Baik": "#d97706", "Minimum": "#dc2626", "Belum Terakreditasi": "#94a3b8"};
+let activeAcc = 'Semua';
+let searchTerm = '';
+
+function renderChips() {
+  const counts = {};
+  DATA.forEach(d => counts[d.akreditasi] = (counts[d.akreditasi] || 0) + 1);
+  const order = ['Unggul','Belum Terakreditasi'].filter(k => counts[k]);
+  const cats = ['Semua', ...order];
+  const row = document.getElementById('chipRow');
+  row.innerHTML = '';
+  cats.forEach(c => {
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (c === activeAcc ? ' active' : '');
+    chip.textContent = c === 'Semua' ? `Semua (${DATA.length})` : `${c} (${counts[c]})`;
+    chip.onclick = () => { activeAcc = c; renderChips(); renderTable(); };
+    row.appendChild(chip);
+  });
+}
+
+function renderTable() {
+  const body = document.getElementById('tableBody');
+  const noResult = document.getElementById('noResult');
+  const term = searchTerm.trim().toLowerCase();
+  const filtered = DATA.filter(d => {
+    const accOk = activeAcc === 'Semua' || d.akreditasi === activeAcc;
+    const searchOk = !term || d.nama.toLowerCase().includes(term);
+    return accOk && searchOk;
+  });
+  document.getElementById('resultCount').textContent = `Menampilkan ${filtered.length} dari ${DATA.length} program studi`;
+  if (filtered.length === 0) { body.innerHTML = ''; noResult.style.display = 'block'; return; }
+  noResult.style.display = 'none';
+  body.innerHTML = filtered.map(d => {
+    const color = ACC_COLORS[d.akreditasi] || '#94a3b8';
+    return `<tr>
+      <td>${d.no}</td>
+      <td class="prodi-name">${d.nama}${d.baru ? '<span class="new-tag">BARU 2026</span>' : ''}</td>
+      <td><span class="badge" style="background:${color}22;color:${color};">${d.akreditasi}</span></td>
+      <td style="color:var(--muted);font-size:12.5px;">${d.nomor}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('searchBox').addEventListener('input', (e) => { searchTerm = e.target.value; renderTable(); });
+renderChips();
+renderTable();
+
+try {
+  Chart.defaults.color = '#0f172a';
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+  const counts = {};
+  DATA.forEach(d => counts[d.akreditasi] = (counts[d.akreditasi] || 0) + 1);
+  const order = ['Unggul','Belum Terakreditasi'].filter(k => counts[k]);
+  new Chart(document.getElementById('chartAcc'), {
+    type: 'doughnut',
+    data: {
+      labels: order.map(k => `${k} (${counts[k]})`),
+      datasets: [{ data: order.map(k => counts[k]), backgroundColor: order.map(k => ACC_COLORS[k]), borderColor: '#ffffff', borderWidth: 2 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11.5 } } } } }
+  });
+  new Chart(document.getElementById('chartBar'), {
+    type: 'bar',
+    data: {
+      labels: order,
+      datasets: [{ data: order.map(k => counts[k]), backgroundColor: order.map(k => ACC_COLORS[k]), borderRadius: 6, barThickness: 60 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { y: { grid: { color: '#e2e8f0' }, beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } }
+  });
+} catch (e) { console.error('Chart render error:', e); }
+</script>
+</body>
+</html>
